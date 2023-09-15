@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aggregation GROUP BY query</title>
+</head>
+<body>
+    <label>Select from:</label>
+    <br>
+    <div class="tabledropdown">Table:
+        <select class="tabledropselection" id="table" onchange="updateCheckBox()">
+            <option>Harm</option>
+            <option>Affect</option>
+            <option>Help</option>
+            <option>Food_1</option>
+            <option>Food_2</option>
+            <option>Eat</option>
+        </select>
+    </div>
+    <label>Attributes:</label>
+    <br>
+    <div id="checkboxes"></div>
+    <form id="form" action="" method="POST">
+        <input type="hidden" name="table" id="tableInput">
+        <input type="hidden" name="columns" id="columnSelected">
+        <input type="hidden" name="attribute" id="attributeInput">
+    </form>
+    <label>Group by:</label>
+    <br>
+    <div id="radioBoxes"></div>
+    <button type="button" id="perform" value="perform" onclick="perform()" onsubmit="return false">perform</button>
+    <br>
+    <label id="result">Result will show here</label>
+    <a href="main.html" class="active">Back</a>
+    <script>
+        function updateCheckBox() {
+            if (!(document.getElementById("table").value === "Help")) {
+                return;
+            }
+
+            let radioboxes = document.getElementById("radioBoxes");
+            let attributes = ["ScientificName", "WorkerID", "Address", "Services"];
+            radioboxes.innerHTML = "";
+
+            // render all checkbox for each table
+            for (let i = 0; i < attributes.length; i++) {
+                let attribute = attributes[i];
+                let checkbox = document.createElement("input");
+                checkbox.type = "radio";
+                checkbox.name = "radioAttribute";
+                checkbox.value = attribute;
+                let label = document.createElement("label");
+                label.appendChild(document.createTextNode(attribute));
+                radioboxes.appendChild(checkbox);
+                radioboxes.appendChild(label);
+                radioboxes.appendChild(document.createElement("br"));
+            }
+
+            let checkboxes = document.getElementById("checkboxes");
+            attributes.push("COUNT(*)");
+            checkboxes.innerHTML = "";
+
+            // render all checkbox for each table
+            for (let i = 0; i < attributes.length; i++) {
+                let attribute = attributes[i];
+                let checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.name = "checkboxAttribute";
+                checkbox.value = attribute;
+                let label = document.createElement("label");
+                label.appendChild(document.createTextNode(attribute));
+                checkboxes.appendChild(checkbox);
+                checkboxes.appendChild(label);
+                checkboxes.appendChild(document.createElement("br"));
+            }
+
+            let result = document.getElementById("result");
+            result.innerHTML = "Result will show here";
+        }
+
+        function perform() {
+            let table = document.getElementById("table");
+            let result = document.getElementById("result");
+
+            // get checked attribute
+            let group = "";
+            let radios = document.getElementsByName("radioAttribute");
+
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    group = radios[i].value;
+                    break;
+                }
+            }
+            if (group === "") {
+                alert("You have to choose a attribute for grouping");
+                return;
+            }
+
+            // get all attributes that are checked
+            let columns = [];
+            let checkboxes = document.getElementsByName("checkboxAttribute");
+            for (let i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    columns.push(checkboxes[i].value);
+                }
+            }
+
+            // if no selected attribute, alert
+            if (columns.length === 0) {
+                alert("You have to choose at least one attribute");
+                return;
+            }
+            // if attribute in group is not selected, alert
+            if (!(columns.includes(group))) {
+                alert("Attribute in group have to be chosen in SELECT");
+                return;
+            }
+            // if columns not selected in group, alert
+            if (columns.some(item => item !== group && item !== "COUNT(*)")) {
+                alert("Attributes have to appear in GROUP BY");
+                return;
+            }
+
+            // add values into form
+            let form = document.getElementById("form");
+            form.action = "";
+            form.method = "POST";
+            document.getElementById("tableInput").value = table.value;
+            document.getElementById("columnSelected").value = columns.join(",");
+            document.getElementById("attributeInput").value = group;
+
+            // send post request
+            let xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action);
+            xhr.onload = function () {
+                if (xhr.responseText === "") {
+                    result.innerHTML = "No data meet the condition";
+                } else {
+                    result.innerHTML = xhr.responseText;
+                }
+            };
+            xhr.onerror = function () {
+                alert(xhr.responseText);
+            };
+            let formData = new FormData(form);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

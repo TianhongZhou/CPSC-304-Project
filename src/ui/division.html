@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Division query</title>
+</head>
+<body>
+<label>Select from:</label>
+<br>
+<input type="radio" id="animals" name="query" value="animals">
+<label for="animals">Find all endangered animals that live in all living environments</label>
+<br>
+<form id="form" action="" method="POST">
+    <input type="hidden" name="queryInput" id="queryInput">
+</form>
+<button type="button" id="perform" value="perform" onclick="perform()" onsubmit="return false">perform</button>
+<br>
+<label id="result">Result will show here</label>
+<a href="main.html" class="active">Back</a>
+<script>
+    function perform() {
+        // get the query that are checked
+        let attributes = [];
+        const radios = document.getElementsByName('query');
+        let selectedValue = null;
+
+        if (radios[0].checked) {
+            selectedValue = "animals";
+        }
+
+        // for (let i = 0; i < radios.length; i++) {
+        //     console.log(i);
+        //     radios[i].addEventListener('change', function() {
+        //         if (this.checked) {
+        //             console.log(2);
+        //             selectedValue = this.value;
+        //         }
+        //     });
+        // }
+
+        // if no selected query, alert
+        if (selectedValue == null) {
+            alert("You have to choose at least one query");
+            return;
+        }
+
+        // add values into form
+        let form = document.getElementById("form");
+        form.action = "";
+        form.method = "POST";
+        document.getElementById("queryInput").value = selectedValue;
+
+        // send post request
+        let xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action);
+        xhr.onload = function () {
+            result.innerHTML = xhr.responseText;
+        };
+        xhr.onerror = function () {
+            alert(xhr.responseText);
+        };
+        let formData = new FormData(form);
+        xhr.send(formData);
+    }
+</script>
+</body>
+</html>

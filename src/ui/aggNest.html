@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aggregation NESTED query</title>
+</head>
+<body>
+<label>Perform the following query:</label>
+<br>
+<label>Find the number of threats occurred at the PlaceIdentified, </label>
+<br>
+<label>ONLY include threats where the maximum ThreatSeverity at one place</label>
+<select id="operator">
+    <option>></option>
+    <option><</option>
+    <option>=</option>
+    <option>>=</option>
+    <option><=</option>
+    <option><></option>
+</select>
+<label>all other ThreatSeverity.</label>
+<form id="form" action="" method="POST">
+    <input type="hidden" name="operator" id="operators">
+    <input type="hidden" name="value" id="value">
+</form>
+<button type="button" id="perform" value="perform" onclick="perform()" onsubmit="return false">perform</button>
+<br>
+<label id="result">Result will show here</label>
+<a href="main.html" class="active">Back</a>
+<script>
+    function perform() {
+        // get the attributes
+        let op = document.getElementById("operator");
+
+        // add values into form
+        let form = document.getElementById("form");
+        form.action = "";
+        form.method = "POST";
+        document.getElementById("operators").value = op.value;
+
+        // send post request
+        let xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action);
+        xhr.onload = function () {
+            if (xhr.responseText === "") {
+                result.innerHTML = "No data meet the condition";
+            } else {
+                result.innerHTML = xhr.responseText;
+            }
+        };
+        xhr.onerror = function () {
+            alert(xhr.responseText);
+        };
+        let formData = new FormData(form);
+        xhr.send(formData);
+    }
+</script>
+</body>
+</html>

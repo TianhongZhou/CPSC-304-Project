@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert data</title>
+</head>
+<body>
+    <label>Insert to:</label>
+    <br>
+    <div class="tabledropdown">
+        <select class="tabledropselection" id="table" onchange="updateLabel()">
+            <option>Organizations_1</option>
+            <option>Organizations_3</option>
+            <option>Organizations_4</option>
+            <option>Continents</option>
+            <option>CountriesPartOf</option>
+            <option>ResponsibleFor</option>
+            <option>WorkersWorkIn</option>
+            <option>LivingEnvironment</option>
+        </select>
+    </div>
+    <label>Values:</label>
+    <br>
+    <label id="variable1">Name:</label>
+    <label>
+        <input type="text" id="variable1input">
+    </label>
+    <br>
+    <label id="variable2">PhoneNumber:</label>
+    <label>
+        <input type="text" id="variable2input">
+    </label>
+    <br>
+    <form id="form" action="" method="POST">
+        <input type="hidden" name="table" id="tableInput">
+        <input type="hidden" name="value1" id="value1Input">
+        <input type="hidden" name="value2" id="value2Input">
+    </form>
+    <button type="button" id="insert" value="insert" onclick="insert()" onsubmit="return false">insert</button>
+    <br>
+    <a href="main.html" class="active">Back</a>
+    <script>
+        function updateLabel() {
+            let table = document.getElementById("table");
+            let variable1 = document.getElementById("variable1");
+            let variable2 = document.getElementById("variable2");
+            if (table.value === "Organizations_4") {
+                variable1.innerHTML = "Address:";
+                variable2.innerHTML = "Name:";
+            } else {
+                variable1.innerHTML = "Name:";
+                variable2.innerHTML = "PhoneNumber:";
+            }
+        }
+
+        async function insert() {
+            let table = document.getElementById("table");
+            let value1 = document.getElementById("variable1input");
+            let value2 = document.getElementById("variable2input");
+
+            if (value1.value.length > 60) {
+                alert("Value for Address is too long");
+                return;
+            }
+            if (value2.value.length > 40) {
+                alert("Value for Name is too long");
+                return;
+            }
+            if (value1.value.length === 0) {
+                alert("Value for Address should be not null");
+                return;
+            }
+            if (value2.value.length === 0) {
+                alert("Value for Name should be not null");
+                return;
+            }
+
+            let form = document.getElementById("form");
+            form.action = "";
+            form.method = "POST";
+            document.getElementById("tableInput").value = table.value;
+            document.getElementById("value1Input").value = value1.value;
+            document.getElementById("value2Input").value = value2.value;
+
+            // send post request
+            let xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action);
+            xhr.onload = function () {
+                alert(xhr.responseText);
+            };
+            xhr.onerror = function () {
+                alert(xhr.responseText);
+            };
+            let formData = new FormData(form);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

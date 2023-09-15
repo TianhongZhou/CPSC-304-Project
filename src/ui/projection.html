@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projection query</title>
+</head>
+<body>
+    <label>Select from:</label>
+    <br>
+    <div class="tabledropdown">
+        <select class="tabledropselection" id="table" onchange="updateCheckBox()">
+            <option>Organizations_1</option>
+            <option>Organizations_3</option>
+            <option>Organizations_4</option>
+            <option>Continents</option>
+            <option>CountriesPartOf</option>
+            <option>ResponsibleFor</option>
+            <option>WorkersWorkIn</option>
+            <option>LivingEnvironment</option>
+            <option>Contains</option>
+            <option>EndangeredAnimal</option>
+            <option>EndangeredIn</option>
+            <option>Live</option>
+            <option>Help</option>
+            <option>Threats_1</option>
+            <option>Threats_2</option>
+            <option>NaturalDisaster</option>
+            <option>Predator</option>
+            <option>Harm</option>
+            <option>Affect</option>
+            <option>Reduce</option>
+            <option>Food_1</option>
+            <option>Food_2</option>
+            <option>Eat</option>
+        </select>
+    </div>
+    <label>Attributes:</label>
+    <br>
+    <div id="checkboxes"></div>
+    <form id="form" action="" method="POST">
+        <input type="hidden" name="table" id="tableInput">
+        <input type="hidden" name="attributes" id="attributesInput">
+    </form>
+    <button type="button" id="perform" value="perform" onclick="perform()" onsubmit="return false">perform</button>
+    <br>
+    <label id="result">Result will show here</label>
+    <a href="main.html" class="active">Back</a>
+    <script>
+        // update the checkbox based on different selection of tables
+        function updateCheckBox() {
+            let table = document.getElementById("table").value;
+            let checkboxes = document.getElementById("checkboxes");
+            let attributes = getAttributes(table);
+            checkboxes.innerHTML = "";
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.name = "attribute";
+            checkbox.value = "All";
+            let label = document.createElement("label");
+            label.appendChild(document.createTextNode("All"));
+            checkboxes.appendChild(checkbox);
+            checkboxes.appendChild(label);
+            checkboxes.appendChild(document.createElement("br"));
+
+            // render all checkbox for each table
+            for (let i = 0; i < attributes.length; i++) {
+                let attribute = attributes[i];
+                let checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.name = "attribute";
+                checkbox.value = attribute;
+                let label = document.createElement("label");
+                label.appendChild(document.createTextNode(attribute));
+                checkboxes.appendChild(checkbox);
+                checkboxes.appendChild(label);
+                checkboxes.appendChild(document.createElement("br"));
+            }
+
+            let result = document.getElementById("result");
+            result.innerHTML = "Result will show here";
+        }
+
+        function getAttributes(table) {
+            // return an array of attribute names for the selected table
+            switch (table) {
+                case "Organizations_1":
+                    return ["Name", "PhoneNumber"];
+                case "Organizations_3":
+                    return ["Name", "FundedBy"];
+                case "Organizations_4":
+                    return ["Address", "Name"];
+                case "Continents":
+                    return ["Name", "NumberOfCountries"];
+                case "CountriesPartOf":
+                    return ["CountryName", "Capital", "Population", "OfficialLanguage", "Continent"];
+                case "ResponsibleFor":
+                    return ["CountryName", "OrganizationAddress"];
+                case "WorkersWorkIn":
+                    return ["ID", "Name", "Gender", "Address"];
+                case "LivingEnvironment":
+                    return ["Name", "Biome"];
+                case "Contains":
+                    return ["CountriesName", "EnvironmentName", "Biome"];
+                case "EndangeredAnimal":
+                    return ["ScientificName", "CommonName", "Type", "Habitat", "Appearance"];
+                case "EndangeredIn":
+                    return ["ScientificName", "Countries", "Status", "Population", "DATE"];
+                case "Live":
+                    return ["ScientificName", "EnvironmentName", "Biome"];
+                case "Help":
+                    return ["WorkerID", "Address", "ScientificName", "Services"];
+                case "Threats_1":
+                    return ["DescriptionOfThreat", "ThreatSeverity"];
+                case "Threats_2":
+                    return ["ThreatID", "PlaceIdentified", "DescriptionOfThreat", "DATE"];
+                case "NaturalDisaster":
+                    return ["ThreatID", "Type"];
+                case "Predator":
+                    return ["ThreatID", "Name"];
+                case "Harm":
+                    return ["ThreatID", "ScientificName"];
+                case "Affect":
+                    return ["ThreatID", "EnvironmentName", "Biome", "DateLastAffected"];
+                case "Reduce":
+                    return ["WorkerID", "Address", "ThreatID", "MitigationMeasure"];
+                case "Food_1":
+                    return ["DescriptionOfFoodSource", "Seasonality"];
+                case "Food_2":
+                    return ["Name", "DescriptionOfFoodSource"];
+                case "Eat":
+                    return ["FoodName", "ScientificName"];
+                default:
+                    return [];
+            }
+        }
+
+        function perform() {
+            let table = document.getElementById("table");
+            let result = document.getElementById("result");
+
+            // get all attributes that are checked
+            let attributes = [];
+            let checkboxes = document.getElementsByName("attribute");
+            for (let i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    attributes.push(checkboxes[i].value);
+                    if (i === 0) {
+                        for (let j = 1; j < checkboxes.length; j++) {
+                            attributes.push(checkboxes[j].value);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // if no selected attribute, alert
+            if (attributes.length === 0) {
+                alert("You have to choose at least one attribute");
+                return;
+            }
+
+            // add values into form
+            let form = document.getElementById("form");
+            form.action = "";
+            form.method = "POST";
+            document.getElementById("tableInput").value = table.value;
+            document.getElementById("attributesInput").value = attributes.join(",");
+
+            // send post request
+            let xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action);
+            xhr.onload = function () {
+                result.innerHTML = xhr.responseText;
+            };
+            xhr.onerror = function () {
+                alert(xhr.responseText);
+            };
+            let formData = new FormData(form);
+            xhr.send(formData);
+        }
+    </script>
+</body>
+</html>

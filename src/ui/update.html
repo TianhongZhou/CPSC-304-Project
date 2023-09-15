@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update table</title>
+</head>
+<body>
+    <label>Select from:</label>
+    <br>
+    <div class="tabledropdown">
+        <select class="tabledropselection" id="table" onchange="updateAttributes()">
+            <option>Organizations_1</option>
+            <option>Organizations_3</option>
+            <option>Organizations_4</option>
+            <option>Continents</option>
+            <option>CountriesPartOf</option>
+            <option>ResponsibleFor</option>
+            <option>WorkersWorkIn</option>
+            <option>LivingEnvironment</option>
+            <option>Contains</option>
+            <option>EndangeredAnimal</option>
+            <option>EndangeredIn</option>
+            <option>Live</option>
+            <option>Help</option>
+            <option>Threats_1</option>
+            <option>Threats_2</option>
+            <option>NaturalDisaster</option>
+            <option>Predator</option>
+            <option>Harm</option>
+            <option>Affect</option>
+            <option>Reduce</option>
+            <option>Food_1</option>
+            <option>Food_2</option>
+            <option>Eat</option>
+        </select>
+    </div>
+    <form id="formProj" action="" method="POST">
+        <input type="hidden" name="table" id="tableInput1">
+        <input type="hidden" name="attributes" id="attributesInput">
+    </form>
+    <label>Choose attribute to be updated:</label>
+    <br>
+    <div id="checkboxes"></div>
+    <label>Choose values to be updated:</label>
+    <br>
+    <button type="button" id="perform" value="perform" onclick="perform()" onsubmit="return false">Get all values</button>
+    <br>
+    <label id="result">Values will show here</label>
+    <br>
+    <label>New value:
+        <input type="text" id="newValue">
+    </label>
+    <br>
+    <form id="formDelete" action="" method="POST">
+        <input type="hidden" name="table" id="tableInput2">
+        <input type="hidden" name="attributeInput" id="attributesInput2">
+        <input type="hidden" name="values" id="values">
+        <input type="hidden" name="newValue" id="newValueInput">
+        <input type="hidden" name="allAttributes" id="allAttributes">
+    </form>
+    <button type="button" id="update" value="update" onclick="updateValue()" onsubmit="return false">Update</button>
+    <br>
+    <a href="main.html" class="active">Back</a>
+    <script>
+        function updateAttributes() {
+            let table = document.getElementById("table").value;
+            let checkboxes = document.getElementById("checkboxes");
+            let attributes = getAttributes(table);
+            checkboxes.innerHTML = "";
+
+            // render all checkbox for each table
+            for (let i = 0; i < attributes.length; i++) {
+                let attribute = attributes[i];
+                let checkbox = document.createElement("input");
+                checkbox.type = "radio";
+                checkbox.name = "attribute";
+                checkbox.value = attribute;
+                let label = document.createElement("label");
+                label.appendChild(document.createTextNode(attribute));
+                checkboxes.appendChild(checkbox);
+                checkboxes.appendChild(label);
+                checkboxes.appendChild(document.createElement("br"));
+            }
+
+            let result = document.getElementById("result");
+            result.innerHTML = "Values will show here";
+        }
+
+        function getAttributes(table) {
+            // return an array of attribute names for the selected table
+            switch (table) {
+                case "Organizations_1":
+                    return ["Name", "PhoneNumber"];
+                case "Organizations_3":
+                    return ["Name", "FundedBy"];
+                case "Organizations_4":
+                    return ["Address", "Name"];
+                case "Continents":
+                    return ["Name", "NumberOfCountries"];
+                case "CountriesPartOf":
+                    return ["CountryName", "Capital", "Population", "OfficialLanguage", "Continent"];
+                case "ResponsibleFor":
+                    return ["CountryName", "OrganizationAddress"];
+                case "WorkersWorkIn":
+                    return ["ID", "Name", "Gender", "Address"];
+                case "LivingEnvironment":
+                    return ["Name", "Biome"];
+                case "Contains":
+                    return ["CountriesName", "EnvironmentName", "Biome"];
+                case "EndangeredAnimal":
+                    return ["ScientificName", "CommonName", "Type", "Habitat", "Appearance"];
+                case "EndangeredIn":
+                    return ["ScientificName", "Countries", "Status", "Population", "DATE"];
+                case "Live":
+                    return ["ScientificName", "EnvironmentName", "Biome"];
+                case "Help":
+                    return ["WorkerID", "Address", "ScientificName", "Services"];
+                case "Threats_1":
+                    return ["DescriptionOfThreat", "ThreatSeverity"];
+                case "Threats_2":
+                    return ["ThreatID", "PlaceIdentified", "DescriptionOfThreat", "DATE"];
+                case "NaturalDisaster":
+                    return ["ThreatID", "Type"];
+                case "Predator":
+                    return ["ThreatID", "Name"];
+                case "Harm":
+                    return ["ThreatID", "ScientificName"];
+                case "Affect":
+                    return ["ThreatID", "EnvironmentName", "Biome", "DateLastAffected"];
+                case "Reduce":
+                    return ["WorkerID", "Address", "ThreatID", "MitigationMeasure"];
+                case "Food_1":
+                    return ["DescriptionOfFoodSource", "Seasonality"];
+                case "Food_2":
+                    return ["Name", "DescriptionOfFoodSource"];
+                case "Eat":
+                    return ["FoodName", "ScientificName"];
+                default:
+                    return [];
+            }
+        }
+
+        function perform() {
+            let table = document.getElementById("table");
+            let result = document.getElementById("result");
+
+            // get all attributes that are checked
+            let attributes = ["All"];
+            for (let j = 0; j < getAttributes(table.value).length; j++) {
+                attributes.push(getAttributes(table.value)[j]);
+            }
+
+            // add values into form
+            let form = document.getElementById("formProj");
+            form.action = "";
+            form.method = "POST";
+            document.getElementById("tableInput1").value = table.value;
+            document.getElementById("attributesInput").value = attributes.join(",");
+
+            // send post request
+            let xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action);
+            xhr.onload = function () {
+                let resultList = xhr.responseText.split("<br>");
+                result.innerHTML = "";
+                // render all checkbox for each value
+                for (let i = 0; i < resultList.length - 1; i++) {
+                    let value = resultList[i];
+                    let checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.name = "value";
+                    checkbox.value = value;
+                    let label = document.createElement("label");
+                    label.appendChild(document.createTextNode(value));
+                    result.appendChild(checkbox);
+                    result.appendChild(label);
+                    result.appendChild(document.createElement("br"));
+                }
+            };
+            let formData = new FormData(form);
+            xhr.send(formData);
+        }
+
+        function updateValue() {
+            let table = document.getElementById("table");
+
+            // get checked attribute
+            let result = "";
+            let radios = document.getElementsByName("attribute");
+
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    result = radios[i].value;
+                    break;
+                }
+            }
+            if (result === "") {
+                alert("You have to choose a attribute");
+                return;
+            }
+
+            // get checked values
+            let results = [];
+            let checkboxes = document.getElementsByName("value");
+
+            for (let i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    for (let c of checkboxes[i].value.split(" | ")) {
+                        results.push(c);
+                        results.push("|");
+                    }
+                }
+            }
+
+            if (results.length === 0) {
+                alert("You have to choose at least 1 value");
+                return;
+            }
+
+            // get value to insert
+            let newValue = document.getElementById("newValue");
+            if ((newValue.value.length > 60) && (result === "Address")) {
+                alert("Value for Address is too long");
+                return;
+            }
+            if ((newValue.value.length > 40) && (result === "Name")) {
+                alert("Value for Name is too long");
+                return;
+            }
+            if (newValue.value.length === 0) {
+                alert("Value for this attribute should be not null");
+                return;
+            }
+
+            let form = document.getElementById("formDelete");
+            form.action = "";
+            form.method = "POST";
+            document.getElementById("tableInput2").value = table.value;
+            document.getElementById("attributesInput2").value = result;
+            document.getElementById("values").value = results.join("");
+            document.getElementById("newValueInput").value = newValue.value;
+            document.getElementById("allAttributes").value = getAttributes(table.value).join(",");
+
+            // send post request
+            let xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action);
+            xhr.onload = function () {
+                alert(xhr.responseText);
+            };
+            xhr.onerror = function () {
+                alert(xhr.responseText);
+            };
+            let formData = new FormData(form);
+            xhr.send(formData);
+            perform();
+        }
+    </script>
+</body>
+</html>
